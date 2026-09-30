@@ -1,0 +1,31 @@
+{
+  "EnvironmentVariables": [
+    {
+      "SchemaName": "lab_EnvironmentName",
+      "Value": "TEST",
+      "Name": {
+        "Default": "Environment Name",
+        "ByLcid": {
+          "1033": "Environment Name"
+        }
+      },
+      "TypeId": 100000000,
+      "IsRequired": false
+    },
+    {
+      "SchemaName": "lab_MessagePrefix",
+      "Value": "Testovací pokus",
+      "DefaultValue": "ALM lab",
+      "Name": {
+        "Default": "Message Prefix",
+        "ByLcid": {
+          "1033": "Message Prefix"
+        }
+      },
+      "TypeId": 100000000,
+      "IsRequired": false
+    }
+  ],
+  "ConnectionReferences": [],
+  "CopilotAgents": []
+}

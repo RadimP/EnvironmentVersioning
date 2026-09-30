@@ -1,0 +1,85 @@
+{
+  "properties": {
+    "connectionReferences": {},
+    "definition": {
+      "$schema": "https://schema.management.azure.com/providers/Microsoft.Logic/schemas/2016-06-01/workflowdefinition.json#",
+      "contentVersion": "1.0.0.0",
+      "parameters": {
+        "$authentication": {
+          "defaultValue": {},
+          "type": "SecureObject"
+        },
+        "$connections": {
+          "defaultValue": {},
+          "type": "Object"
+        },
+        "Environment Name (lab_EnvironmentName)": {
+          "defaultValue": "DEV",
+          "type": "String",
+          "metadata": {
+            "schemaName": "lab_EnvironmentName"
+          }
+        },
+        "Message Prefix (lab_MessagePrefix)": {
+          "defaultValue": "Vývojový pokus",
+          "type": "String",
+          "metadata": {
+            "schemaName": "lab_MessagePrefix"
+          }
+        }
+      },
+      "triggers": {
+        "manual": {
+          "metadata": {
+            "operationMetadataId": "1199e9b6-2b44-4694-ab17-9a5b642da06a"
+          },
+          "type": "Request",
+          "kind": "Button",
+          "inputs": {
+            "schema": {
+              "type": "object",
+              "properties": {},
+              "required": []
+            }
+          }
+        }
+      },
+      "actions": {
+        "ReadEnvironment": {
+          "runAfter": {},
+          "metadata": {
+            "operationMetadataId": "50ee1845-b672-426f-adc3-a759d6d2f834"
+          },
+          "type": "Compose",
+          "inputs": "@parameters('Environment Name (lab_EnvironmentName)')"
+        },
+        "ReadPrefix": {
+          "runAfter": {
+            "ReadEnvironment": [
+              "Succeeded"
+            ]
+          },
+          "metadata": {
+            "operationMetadataId": "fa432d54-8837-48a7-b77d-572d561cb9f1"
+          },
+          "type": "Compose",
+          "inputs": "@parameters('Message Prefix (lab_MessagePrefix)')"
+        },
+        "Result": {
+          "runAfter": {
+            "ReadPrefix": [
+              "Succeeded"
+            ]
+          },
+          "metadata": {
+            "operationMetadataId": "9512c47b-64e8-43bd-a208-b6f3d4c90c00"
+          },
+          "type": "Compose",
+          "inputs": " @{concat('Prostredi=', outputs('ReadEnvironment'), '; zprava=', outputs('ReadPrefix'))}"
+        }
+      }
+    },
+    "templateName": null
+  },
+  "schemaVersion": "1.0.0.0"
+}
