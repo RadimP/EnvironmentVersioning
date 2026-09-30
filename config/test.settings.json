@@ -14,7 +14,7 @@
     },
     {
       "SchemaName": "lab_MessagePrefix",
-      "Value": "Testovací pokus",
+      "Value": "Konfigurace změněna v TEST",
       "DefaultValue": "ALM lab",
       "Name": {
         "Default": "Message Prefix",
