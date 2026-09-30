@@ -1,3 +1,5 @@
 /artifacts/
 *.log
 *.local.json
+/pp-alm-lab.iml
+/.idea/
