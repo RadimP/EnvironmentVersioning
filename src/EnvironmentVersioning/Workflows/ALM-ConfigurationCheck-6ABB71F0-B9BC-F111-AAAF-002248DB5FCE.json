@@ -1,6 +1,16 @@
 {
   "properties": {
-    "connectionReferences": {},
+    "connectionReferences": {
+      "shared_sharepointonline": {
+        "runtimeSource": "invoker",
+        "connection": {
+          "connectionReferenceLogicalName": "lab_sharedsharepointonline_1e762"
+        },
+        "api": {
+          "name": "shared_sharepointonline"
+        }
+      }
+    },
     "definition": {
       "$schema": "https://schema.management.azure.com/providers/Microsoft.Logic/schemas/2016-06-01/workflowdefinition.json#",
       "contentVersion": "1.0.0.0",
@@ -25,6 +35,20 @@
           "type": "String",
           "metadata": {
             "schemaName": "lab_MessagePrefix"
+          }
+        },
+        "SharePointSiteUrl (lab_SharePointSiteUrl)": {
+          "defaultValue": "https://gyckcw1.sharepoint.com/sites/webpart-site",
+          "type": "String",
+          "metadata": {
+            "schemaName": "lab_SharePointSiteUrl"
+          }
+        },
+        "SharePointListId (lab_SharePointListId)": {
+          "defaultValue": "d4e7ebe5-c020-495b-86bb-591fbfa93fa8",
+          "type": "String",
+          "metadata": {
+            "schemaName": "lab_SharePointListId"
           }
         }
       },
@@ -76,6 +100,40 @@
           },
           "type": "Compose",
           "inputs": " @{concat('Prostredi=', outputs('ReadEnvironment'), '; zprava=', outputs('ReadPrefix'), '; verze=1.0.1.0')}"
+        },
+        "Get_items": {
+          "runAfter": {
+            "Result": [
+              "Succeeded"
+            ]
+          },
+          "type": "OpenApiConnection",
+          "inputs": {
+            "parameters": {
+              "dataset": "@parameters('SharePointSiteUrl (lab_SharePointSiteUrl)')",
+              "table": "@parameters('SharePointListId (lab_SharePointListId)')"
+            },
+            "host": {
+              "apiId": "/providers/Microsoft.PowerApps/apis/shared_sharepointonline",
+              "operationId": "GetItems",
+              "connectionName": "shared_sharepointonline"
+            }
+          }
+        },
+        "For_each": {
+          "foreach": "@outputs('Get_items')?['body/value']",
+          "actions": {
+            "Compose": {
+              "type": "Compose",
+              "inputs": "@{items('For_each')?['Title']} @{items('For_each')?['Description']}"
+            }
+          },
+          "runAfter": {
+            "Get_items": [
+              "Succeeded"
+            ]
+          },
+          "type": "Foreach"
         }
       }
     },

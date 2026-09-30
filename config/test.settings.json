@@ -24,8 +24,38 @@
       },
       "TypeId": 100000000,
       "IsRequired": false
+    },
+    {
+      "SchemaName": "lab_SharePointListId",
+      "Value": "d4e7ebe5-c020-495b-86bb-591fbfa93fa8",
+      "Name": {
+        "Default": "SharePointListId",
+        "ByLcid": {
+          "1033": "SharePointListId"
+        }
+      },
+      "TypeId": 100000000,
+      "IsRequired": false
+    },
+    {
+      "SchemaName": "lab_SharePointSiteUrl",
+      "Value": "https://gyckcw1.sharepoint.com/sites/webpart-site",
+      "Name": {
+        "Default": "SharePointSiteUrl",
+        "ByLcid": {
+          "1033": "SharePointSiteUrl"
+        }
+      },
+      "TypeId": 100000000,
+      "IsRequired": false
     }
   ],
-  "ConnectionReferences": [],
+  "ConnectionReferences": [
+    {
+      "LogicalName": "lab_sharedsharepointonline_1e762",
+      "ConnectionId": "8e74944fec0447f197099e6a17a02d84",
+      "ConnectorId": "/providers/Microsoft.PowerApps/apis/shared_sharepointonline"
+    }
+  ],
   "CopilotAgents": []
 }
