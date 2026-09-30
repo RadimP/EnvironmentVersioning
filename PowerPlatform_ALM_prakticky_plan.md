@@ -42,7 +42,7 @@ Gitový commit identifikuje přesný stav souborů. Verze solution je samostatn�
 
 V [Power Automate](https://make.powerautomate.com/) přepněte na DEV a otevřete Solutions → své řešení. Stejné solution lze spravovat i v [Power Apps](https://make.powerapps.com/).
 
-Poznamenejte si jeho skutečný Unique name. Níže používám `PPAlmLab`; pokud je vaše řešení pojmenované jinak, v CLI použijte jeho skutečný Unique name. Název řešení ponechte stejný při všech nasazeních do TEST.
+Poznamenejte si jeho skutečný Unique name. Níže používám `EnvironmentVersioning`; pokud je vaše řešení pojmenované jinak, v CLI použijte jeho skutečný Unique name. Název řešení ponechte stejný při všech nasazeních do TEST.
 
 Ve Settings nastavte výchozí verzi `1.0.0.0`. Dokud řešení nic neobsahuje, vytvořte vlastní publisher, například Display name `ALM Lab`, Name `AlmLabPublisher` a Prefix `lab`, a přiřaďte ho řešení. Náhodný prefix výchozího publisheru by také fungoval, ale vlastní prefix usnadní orientaci.
 
@@ -140,7 +140,7 @@ Vytvořte `README.md` s Unique name řešení, publisher prefixem, rolí DEV/TES
 
 | Cesta | Účel | Verzovat |
 | --- | --- | --- |
-| src/PPAlmLab/ | Rozbalené soubory řešení | Ano |
+| src/EnvironmentVersioning/ | Rozbalené soubory řešení | Ano |
 | config/dev.settings.json | Netajné hodnoty pro DEV | Ano |
 | config/test.settings.json | Netajné hodnoty pro TEST | Ano |
 | artifacts/ | Exportované a sestavené ZIPy | Ne; jde o reprodukovatelné balíčky |
@@ -165,17 +165,17 @@ Dokončete přihlášení svým Microsoft účtem. Před exportem ověřte, že 
 V DEV mají být všechny akce flow uložené. V portálu zvolte Publish all customizations / Publish all changes. Následující exporty proveďte bez mezilehlých změn a pro stejnou verzi:
 
 ```powershell
-$SolutionName = "PPAlmLab"
-pac solution export --name $SolutionName --path ".\artifacts\PPAlmLab.zip" --overwrite
-pac solution export --name $SolutionName --path ".\artifacts\PPAlmLab_managed.zip" --managed --overwrite
-pac solution unpack --zipfile ".\artifacts\PPAlmLab.zip" --folder ".\src\PPAlmLab" --packagetype Both
+$SolutionName = "EnvironmentVersioning"
+pac solution export --name $SolutionName --path ".\artifacts\EnvironmentVersioning.zip" --overwrite
+pac solution export --name $SolutionName --path ".\artifacts\EnvironmentVersioning_managed.zip" --managed --overwrite
+pac solution unpack --zipfile ".\artifacts\EnvironmentVersioning.zip" --folder ".\src\EnvironmentVersioning" --packagetype Both
 ```
 
-Unmanaged export je první příkaz; druhý exportuje managed variantu. Názvy ZIPů musí tvořit dvojici `PPAlmLab.zip` a `PPAlmLab_managed.zip` ve stejné složce. Pokud se vaše řešení jmenuje jinak, můžete zachovat tyto lokální názvy souborů; parametr `--name` musí obsahovat skutečný Unique name.
+Unmanaged export je první příkaz; druhý exportuje managed variantu. Názvy ZIPů musí tvořit dvojici `EnvironmentVersioning.zip` a `EnvironmentVersioning_managed.zip` ve stejné složce. Pokud se vaše řešení jmenuje jinak, můžete zachovat tyto lokální názvy souborů; parametr `--name` musí obsahovat skutečný Unique name.
 
 `Both` rozbalí obě varianty do jednoho stromu a uchová jejich rozdíly. Později z něj sestavíte managed balíček. Samotný unmanaged export se tímto nástrojem na managed řešení nepřevádí.
 
-Otevřete `src/PPAlmLab` v editoru. V této export/unpack cestě očekávejte XML metadata, například `Other/Solution.xml`, a definici flow v JSON souboru ve `Workflows`. Přesná struktura závisí na komponentách a verzi nástroje. Nativní Git integrace může používat jiný, YAML formát.
+Otevřete `src/EnvironmentVersioning` v editoru. V této export/unpack cestě očekávejte XML metadata, například `Other/Solution.xml`, a definici flow v JSON souboru ve `Workflows`. Přesná struktura závisí na komponentách a verzi nástroje. Nativní Git integrace může používat jiný, YAML formát.
 
 Výstup kroku: čitelné soubory řešení na disku, připravené k verzování.
 
@@ -184,7 +184,7 @@ Výstup kroku: čitelné soubory řešení na disku, připravené k verzování.
 Vygenerujte deployment settings:
 
 ```powershell
-pac solution create-settings --solution-zip ".\artifacts\PPAlmLab_managed.zip" --settings-file ".\config\test.settings.json"
+pac solution create-settings --solution-zip ".\artifacts\EnvironmentVersioning_managed.zip" --settings-file ".\config\test.settings.json"
 ```
 
 Ponechte skutečné SchemaName vygenerované nástrojem. Pro náš příklad nastavte obsah:
@@ -229,7 +229,7 @@ Výstup kroku: první verzovaný stav řešení a konfigurace.
 Z verzovaných souborů sestavte balíček:
 
 ```powershell
-pac solution pack --folder ".\src\PPAlmLab" --zipfile ".\artifacts\PPAlmLab_from_git_managed.zip" --packagetype Managed
+pac solution pack --folder ".\src\EnvironmentVersioning" --zipfile ".\artifacts\EnvironmentVersioning_from_git_managed.zip" --packagetype Managed
 ```
 
 Pro první import doporučuji projít průvodce v portálu. V Power Automate přepněte na TEST → Solutions → Import → vyberte sestavený managed ZIP. Zkontrolujte název a verzi a ve výzvě pro proměnné nastavte `TEST` a `Testovací pokus`.
@@ -249,7 +249,7 @@ Alternativní import přes CLI, který použijete u další verze:
 ```powershell
 pac auth select --name TEST
 pac auth who
-pac solution import --path ".\artifacts\PPAlmLab_from_git_managed.zip" --settings-file ".\config\test.settings.json"
+pac solution import --path ".\artifacts\EnvironmentVersioning_from_git_managed.zip" --settings-file ".\config\test.settings.json"
 ```
 
 Použijte při konkrétním nasazení buď průvodce, nebo CLI. JSON je vstupem CLI importu, nikoli souborem, který nahrajete do běžného průvodce.
@@ -272,7 +272,7 @@ concat('Prostredi=', outputs('ReadEnvironment'), '; zprava=', outputs('ReadPrefi
 
 Uložte flow, spusťte ho a změňte verzi solution na `1.0.1.0` ve Settings. Zkontrolujte vyloučení Current values a publikujte změny.
 
-Přepněte CLI na DEV a opakujte oba exporty z kroku 8. Pro nový unpack použijte prázdnou dočasnou složku, například `artifacts/unpacked-next`, a `--packagetype Both`. Poté nahraďte celý generovaný obsah `src/PPAlmLab` novým stromem. V `src/PPAlmLab` proto neukládejte ručně psané návody ani skripty.
+Přepněte CLI na DEV a opakujte oba exporty z kroku 8. Pro nový unpack použijte prázdnou dočasnou složku, například `artifacts/unpacked-next`, a `--packagetype Both`. Poté nahraďte celý generovaný obsah `src/EnvironmentVersioning` novým stromem. V `src/EnvironmentVersioning` proto neukládejte ručně psané návody ani skripty.
 
 Použití kompletního čerstvého stromu zabrání ponechání souborů komponent, které byly z řešení odstraněny. Před nahrazením musí být původní stav commitnutý a pracovní strom čistý.
 
@@ -367,9 +367,9 @@ Po nasazení ověřte, že DEV čte ALM_DEV a TEST čte ALM_TEST, přičemž flo
 
 ## 14. Nativní Dataverse Git integrace a CI/CD v Azure DevOps
 
-Tento postup navazuje na `PPAlmLab` a dvě prostředí DEV/TEST. Výsledkem bude vývoj v maker portálu, commity přímo z Dataverse do Azure Repos, kontrola změn v pull requestu a sestavení a nasazení přes Azure DevOps Pipelines. Stejné unmanaged řešení z DEV můžete použít i zde; „nativní řešení“ není nový typ solution, ale způsob propojení jeho zdrojů s Gitem.
+Tento postup navazuje na `EnvironmentVersioning` a dvě prostředí DEV/TEST. Výsledkem bude vývoj v maker portálu, commity přímo z Dataverse do Azure Repos, kontrola změn v pull requestu a sestavení a nasazení přes Azure DevOps Pipelines. Stejné unmanaged řešení z DEV můžete použít i zde; „nativní řešení“ není nový typ solution, ale způsob propojení jeho zdrojů s Gitem.
 
-Příklady předpokládají Unique name `PPAlmLab`, publisher `AlmLabPublisher` a prefix `lab`. Nahraďte je skutečnými názvy. Pro nový postup doporučuji samostatný repozitář `pp-alm-native`. Předchozí GitHub repozitář si ponechte jako záznam prvního cvičení. Nativní formát zdrojů se liší od rozbaleného XML z bodů 8–10, proto oba postupy neposílejte do stejné zdrojové složky.
+Příklady předpokládají Unique name `EnvironmentVersioning`, publisher `AlmLabPublisher` a prefix `lab`. Nahraďte je skutečnými názvy. Pro nový postup doporučuji samostatný repozitář `pp-alm-native`. Předchozí GitHub repozitář si ponechte jako záznam prvního cvičení. Nativní formát zdrojů se liší od rozbaleného XML z bodů 8–10, proto oba postupy neposílejte do stejné zdrojové složky.
 
 ### 14.1 Jak budou části spolupracovat
 
@@ -424,13 +424,13 @@ Zdroj: [připojení organizace k Entra ID](https://learn.microsoft.com/en-us/azu
 ### 14.4 Připojte existující solution v DEV k Azure Repos
 
 1. V [Power Apps maker portálu](https://make.powerapps.com/) vyberte **DEV**. Stejné Solutions jsou dostupné i v Power Automate.
-2. Otevřete své custom unmanaged řešení `PPAlmLab`. Pokud je stále prázdné, nejprve do něj přidejte flow a dvě proměnné z bodů 4–6.
+2. Otevřete své custom unmanaged řešení `EnvironmentVersioning`. Pokud je stále prázdné, nejprve do něj přidejte flow a dvě proměnné z bodů 4–6.
 3. V Source control zvolte **Connect to Git**; volba může být dostupná i na seznamu Solutions.
 4. Pro tento lab vyberte **Solution binding**: verzovat chcete právě toto řešení. **Environment binding** je vhodné pro dedikované vývojové prostředí, kde chcete automaticky verzovat všechny unmanaged custom solutions. Microsoft jej doporučuje jako obecný výchozí přístup; zde volím solution binding kvůli rozsahu jednoho cvičení.
 5. Vyberte Azure DevOps organizaci, projekt a repozitář `pp-alm-native`.
 6. Vyberte větev **`dev/radim`** a Git folder **`native`**. Tato složka bude kořen nativních zdrojů. Pipeline níže předpokládá právě tuto cestu.
 7. Zvolte Connect. Pokud průvodce nejprve nastaví solution binding pro prostředí, dokončete také vazbu konkrétního řešení přes … → Connect to Git na jeho řádku; připojení prostředí samo ještě nemusí znamenat připojení konkrétní solution.
-8. Otevřete Source control a ověřte repo, větev a složku. Použijte Refresh, prohlédněte Changes a proveďte první **Commit** s popisem `Initial native source for PPAlmLab`.
+8. Otevřete Source control a ověřte repo, větev a složku. Použijte Refresh, prohlédněte Changes a proveďte první **Commit** s popisem `Initial native source for EnvironmentVersioning`.
 9. V Azure Repos přepněte na `dev/radim` a ověřte vznik commitu a souborů pod `native/`.
 
 Default Solution ani Common Data Service Default Solution tímto způsobem nepřipojujte. U solution binding respektujte omezení sdílených komponent: jeden objekt musí mít jediné místo v source control. Pozdější víceřešení návrh proto promyslete podle závislostí a zvolené vazby.
@@ -445,8 +445,8 @@ Nativní integrace vytváří YAML manifesty i další soubory podle typu kompon
 
 | Cesta od kořene repozitáře | Účel | Verzovat |
 | --- | --- | --- |
-| `native/solutions/PPAlmLab/solution.yml` | Metadata a verze řešení | Ano |
-| `native/solutions/PPAlmLab/solutioncomponents.yml` a další manifesty v této složce | Seznamy komponent a závislostí | Ano |
+| `native/solutions/EnvironmentVersioning/solution.yml` | Metadata a verze řešení | Ano |
+| `native/solutions/EnvironmentVersioning/solutioncomponents.yml` a další manifesty v této složce | Seznamy komponent a závislostí | Ano |
 | `native/publishers/AlmLabPublisher/publisher.yml` | Publisher | Ano |
 | `native/modernflows/` | Zdrojové soubory cloud flow, pokud je integrace takto vytvoří | Ano |
 | `native/environmentvariabledefinitions/` | Definice proměnných prostředí | Ano |
@@ -457,7 +457,7 @@ Nativní integrace vytváří YAML manifesty i další soubory podle typu kompon
 | `README.md`, `.gitignore` | Postup a pravidla nového repozitáře | Ano |
 | `artifacts/` | Lokální sestavené ZIPy | Ne |
 
-Tento layout nahrazuje zdrojovou složku `src/PPAlmLab/` pro **nový nativní repozitář**. V původním ručním cvičení se tato složka používá dál. Sestavení nativního řešení bude číst celý kořen `native/`, tedy i publisher a komponenty; samotná složka `native/solutions/PPAlmLab/` nestačí.
+Tento layout nahrazuje zdrojovou složku `src/EnvironmentVersioning/` pro **nový nativní repozitář**. V původním ručním cvičení se tato složka používá dál. Sestavení nativního řešení bude číst celý kořen `native/`, tedy i publisher a komponenty; samotná složka `native/solutions/EnvironmentVersioning/` nestačí.
 
 V Azure Repos přidejte do **`dev/radim`** soubory `config/dev.settings.json`, `config/test.settings.json`, README a `.gitignore`. Lze použít webový editor nebo nový lokální clone tohoto repozitáře. Do `.gitignore` přidejte:
 
@@ -595,7 +595,7 @@ pool:
   vmImage: windows-latest
 
 variables:
-  SolutionName: PPAlmLab
+  SolutionName: EnvironmentVersioning
   NativeRoot: '$(Build.SourcesDirectory)/native'
   PacVersion: '2.12.2'
   TestServiceConnection: PP-TEST-WIF
@@ -753,11 +753,11 @@ Zdroje: [PAC solution pack](https://learn.microsoft.com/en-us/power-platform/dev
 
 1. Commitněte `azure-pipelines.yml` a oba konfigurační soubory do `dev/radim`. V této větvi již musí být také první native commit pod `native/`.
 2. V Azure DevOps zvolte Pipelines → New pipeline → Azure Repos Git → `pp-alm-native` → Existing Azure Pipelines YAML file.
-3. Vyberte větev `dev/radim` a `/azure-pipelines.yml`. Pipeline pojmenujte například `PPAlmLab-CI-CD`.
+3. Vyberte větev `dev/radim` a `/azure-pipelines.yml`. Pipeline pojmenujte například `EnvironmentVersioning-CI-CD`.
 4. Spusťte ji nejprve ručně nad `dev/radim`. Autorizujte potřebné resources. Build má uspět a vytvořit artifact `solution`; Deploy_TEST musí být **Skipped**.
 5. Otevřete artifact, ověřte ZIP, `test.settings.json` a `provenance.json`. Především zkontrolujte skutečný Unique name, verzi a TEST hodnoty.
 6. Po prvním úspěšném buildu otevřete Repos → Branches → `main` → … → Branch policies.
-7. Nastavte Build validation → Add: vyberte `PPAlmLab-CI-CD`, Trigger **Automatic**, Policy requirement **Required** a expiraci při změně cílové větve. Pro první lab ponechte bez path filtru, aby se kontrolovala i konfigurace a YAML.
+7. Nastavte Build validation → Add: vyberte `EnvironmentVersioning-CI-CD`, Trigger **Automatic**, Policy requirement **Required** a expiraci při změně cílové větve. Pro první lab ponechte bez path filtru, aby se kontrolovala i konfigurace a YAML.
 8. Zapněte vyřešení komentářů. Reviewer policy nastavte podle počtu lidí: v samostatném labu můžete kontrolu provést sám bez povinného cizího review; v týmu vyžadujte alespoň jednoho dalšího reviewera.
 9. Ověřte, že běžný vývojový účet nepoužívá Bypass policies k přímému přepisování `main`. Změny posílejte PR.
 
@@ -776,11 +776,11 @@ Zdroje: [Azure Repos PR triggers](https://learn.microsoft.com/en-us/azure/devops
 5. Merge do `main` vyvolá další běh pipeline. Ten sestaví artifact z výsledného main commitu a bude čekat na approval pro `pp-alm-test`.
 6. V přehledu běhu otevřete čekající Deploy_TEST, zkontrolujte commit/verzi/artifact a potvrďte approval.
 7. V logu zkontrolujte WhoAmI: má jít o správnou aplikační identitu a TEST. Následně má uspět managed import s deployment settings.
-8. V Power Automate přepněte na TEST → Solutions → `PPAlmLab`. Ověřte Managed, verzi, obě Current values a stav flow.
+8. V Power Automate přepněte na TEST → Solutions → `EnvironmentVersioning`. Ověřte Managed, verzi, obě Current values a stav flow.
 9. Spusťte flow. Výsledek má obsahovat `Prostredi=TEST`, `Testovací pokus` a vaši změnu `Native Git v1`. V DEV má stále být DEV a jeho vlastní zpráva.
 10. Pokud flow v TEST nevidíte nebo nemůžete spustit, ověřte přístup/co-owner či run-only oprávnění lidského testovacího účtu. Aplikační identita importu a uživatel, který flow testuje, mají odlišné role.
 
-Je-li v TEST již managed `PPAlmLab` z prvního cvičení, zachovejte Unique name a publisher a nasaďte vyšší verzi. Pokud je v TEST originating unmanaged varianta stejného řešení, nejprve vyřešte tento konflikt podle původního plánu; nevytvářejte druhé řešení s náhodným názvem jen kvůli obejití importu.
+Je-li v TEST již managed `EnvironmentVersioning` z prvního cvičení, zachovejte Unique name a publisher a nasaďte vyšší verzi. Pokud je v TEST originating unmanaged varianta stejného řešení, nejprve vyřešte tento konflikt podle původního plánu; nevytvářejte druhé řešení s náhodným názvem jen kvůli obejití importu.
 
 Import v této ukázce provádí běžnou aktualizaci. Odebrání komponenty ze zdrojů a následný Update nemusí odstranit komponentu z TEST. Pro nácvik odstraňování navrhněte samostatný **Upgrade** postup, například import holding solution a následný Apply Solution Upgrade. Před takovou změnou posuďte dopad na data a závislosti.
 
@@ -813,7 +813,7 @@ Nejprve dokončete jeden funkční cyklus bez konektorů. Pak navazujte bodem 13
 
 1. Přidejte v DEV flow se SharePoint akcí a solution-aware connection reference. Definice se dostane do native commitu spolu s flow.
 2. V TEST předem vytvořte cílové SharePoint prostředky a autorizované připojení. Import solution nevytvoří SharePoint list ani nepřenáší heslo/OAuth souhlas k připojení.
-3. Z aktuálně sestaveného ZIPu můžete vygenerovat šablonu příkazem `pac solution create-settings --solution-zip .\artifacts\PPAlmLab_managed.zip --settings-file .\config\test.template.json`. Načtěte skutečná Schema names a logical name reference; šablonu poté doplňte do `test.settings.json`.
+3. Z aktuálně sestaveného ZIPu můžete vygenerovat šablonu příkazem `pac solution create-settings --solution-zip .\artifacts\EnvironmentVersioning_managed.zip --settings-file .\config\test.template.json`. Načtěte skutečná Schema names a logical name reference; šablonu poté doplňte do `test.settings.json`.
 4. Přidejte TEST Site URL, GUID cílového listu a skutečné mapování connection reference na connection v TEST. Typický záznam je `LogicalName`, `ConnectionId`, `ConnectorId`; konkrétní hodnoty převezměte ze šablony a cílového připojení.
 5. Ověřte, že importující identita a vlastník flow smějí dané connection použít. Způsob sdílení a podporu service principal posuďte podle konkrétního konektoru. Samotná role System Administrator v Dataverse nezajišťuje přihlášení do SharePointu.
 6. Přes PR nasaďte a ověřte, že TEST zapisuje výhradně do TEST seznamu. U flow s premium konektory ověřte také licenci podle vlastníka a způsobu spuštění. Je-li vlastníkem service principal, řešte Process/per-flow licenci, licencovanou flow group nebo podporovaný designated licensed user podle aktuálních pravidel. Licence pro aktivní použití Managed Environments a licence pro tento způsob běhu flow mají odlišný účel.
