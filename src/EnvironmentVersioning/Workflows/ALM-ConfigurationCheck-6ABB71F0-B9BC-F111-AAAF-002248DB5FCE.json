@@ -75,7 +75,7 @@
             "operationMetadataId": "9512c47b-64e8-43bd-a208-b6f3d4c90c00"
           },
           "type": "Compose",
-          "inputs": " @{concat('Prostredi=', outputs('ReadEnvironment'), '; zprava=', outputs('ReadPrefix'))}"
+          "inputs": " @{concat('Prostredi=', outputs('ReadEnvironment'), '; zprava=', outputs('ReadPrefix'), '; verze=1.0.1.0')}"
         }
       }
     },
