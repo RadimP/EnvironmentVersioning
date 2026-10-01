@@ -445,19 +445,19 @@ Nativní integrace vytváří YAML manifesty i další soubory podle typu kompon
 
 | Cesta od kořene repozitáře | Účel | Verzovat |
 | --- | --- | --- |
-| `solutions/solutions/EnvironmentVersioning/solution.yml` | Metadata a verze řešení | Ano |
-| `solutions/solutions/EnvironmentVersioning/solutioncomponents.yml` a další manifesty v této složce | Seznamy komponent a závislostí | Ano |
-| `solutions/publishers/AlmLabPublisher/publisher.yml` | Publisher | Ano |
-| `solutions/modernflows/` | Zdrojové soubory cloud flow, pokud je integrace takto vytvoří | Ano |
-| `solutions/environmentvariabledefinitions/` | Definice proměnných prostředí | Ano |
-| Další složky vytvořené v `solutions/` | Ostatní komponenty řešení | Ano |
+| `solutions/EnvironmentVersioning/solution.yml` | Metadata a verze řešení | Ano |
+| `solutions/EnvironmentVersioning/solutioncomponents.yml` a další manifesty v této složce | Seznamy komponent a závislostí | Ano |
+| `solutions/EnvironmentVersioning/publishers/AlmLabPublisher/publisher.yml` | Publisher | Ano |
+| `solutions/EnvironmentVersioning/modernflows/` | Zdrojové soubory cloud flow, pokud je integrace takto vytvoří | Ano |
+| `solutions/EnvironmentVersioning/environmentvariabledefinitions/` | Definice proměnných prostředí | Ano |
+| Další složky vytvořené v `solutions/EnvironmentVersioning/` | Ostatní komponenty řešení | Ano |
 | `config/dev.settings.json` | Netajné DEV hodnoty jako záznam požadované konfigurace | Ano |
 | `config/test.settings.json` | Netajné hodnoty použité při importu do TEST | Ano |
 | `azure-pipelines.yml` | Definice sestavení a nasazení | Ano |
 | `README.md`, `.gitignore` | Postup a pravidla nového repozitáře | Ano |
 | `artifacts/` | Lokální sestavené ZIPy | Ne |
 
-Tento layout nahrazuje zdrojovou složku `src/EnvironmentVersioning/` pro **nový nativní repozitář**. V původním ručním cvičení se tato složka používá dál. Sestavení nativního řešení bude číst celý kořen `solutions/`, tedy i publisher a komponenty; samotná složka `solutions/solutions/EnvironmentVersioning/` nestačí.
+Tento layout nahrazuje zdrojovou složku `src/EnvironmentVersioning/` pro **nový nativní repozitář**. V původním ručním cvičení se tato složka používá dál. Sestavení nativního řešení bude číst celý kořen `solutions/`, tedy i publisher a komponenty; samotná složka `solutions/EnvironmentVersioning/` nestačí.
 
 V Azure Repos přidejte do **`dev/radim`** soubory `config/dev.settings.json`, `config/test.settings.json`, README a `.gitignore`. Lze použít webový editor nebo nový lokální clone tohoto repozitáře. Do `.gitignore` přidejte:
 
@@ -579,7 +579,7 @@ Zdroj: [Azure Pipelines approvals and checks](https://learn.microsoft.com/en-us/
 
 ### 14.11 Přidejte kompletní YAML pipeline
 
-V `dev/radim` vytvořte v kořeni repozitáře soubor **`azure-pipelines.yml`**. Příklad předpokládá právě jedno řešení pod `solutions/solutions/`, výše uvedenou strukturu, service connection `PP-TEST-WIF` a Azure DevOps Environment `pp-alm-test`. Pokud máte jiný Unique name nebo Schema names, nahraďte je v ukázce i JSON souborech.
+V `dev/radim` vytvořte v kořeni repozitáře soubor **`azure-pipelines.yml`**. Příklad předpokládá právě jedno řešení pod `solutions/`, výše uvedenou strukturu, service connection `PP-TEST-WIF` a Azure DevOps Environment `pp-alm-test`. Pokud máte jiný Unique name nebo Schema names, nahraďte je v ukázce i JSON souborech.
 
 Nativní YAML zdroje umí zabalit PAC od verze **2.4.1**. Ukázka připíná vydaný `Microsoft.PowerApps.CLI.Tool` **2.12.2** a používá .NET SDK **10.x**, které tato verze vyžaduje. Aktualizaci CLI později udělejte samostatným commitem a ověřte sestavení; není nutné sledovat „latest“ v každém buildu. Pro native pack není potřeba dřívější dvojitý export Managed/Unmanaged a unpack Both.
 
