@@ -369,7 +369,7 @@ Po nasazení ověřte, že DEV čte ALM_DEV a TEST čte ALM_TEST, přičemž flo
 
 Tento postup navazuje na `EnvironmentVersioning` a dvě prostředí DEV/TEST. Výsledkem bude vývoj v maker portálu, commity přímo z Dataverse do Azure Repos, kontrola změn v pull requestu a sestavení a nasazení přes Azure DevOps Pipelines. Stejné unmanaged řešení z DEV můžete použít i zde; „nativní řešení“ není nový typ solution, ale způsob propojení jeho zdrojů s Gitem.
 
-Příklady předpokládají Unique name `EnvironmentVersioning`, publisher `AlmLabPublisher` a prefix `lab`. Nahraďte je skutečnými názvy. Pro nový postup doporučuji samostatný repozitář `pp-alm-native`. Předchozí GitHub repozitář si ponechte jako záznam prvního cvičení. Nativní formát zdrojů se liší od rozbaleného XML z bodů 8–10, proto oba postupy neposílejte do stejné zdrojové složky.
+Příklady předpokládají Unique name `EnvironmentVersioning`, publisher `AlmLabPublisher` a prefix `lab`. Nahraďte je skutečnými názvy. Pro nový postup doporučuji samostatný repozitář `PowerPlatform-ALM-Lab`. Předchozí GitHub repozitář si ponechte jako záznam prvního cvičení. Nativní formát zdrojů se liší od rozbaleného XML z bodů 8–10, proto oba postupy neposílejte do stejné zdrojové složky.
 
 ### 14.1 Jak budou části spolupracovat
 
@@ -410,7 +410,7 @@ Zdroje: [licence Managed Environments](https://learn.microsoft.com/en-us/power-p
 1. Otevřete [Azure DevOps](https://dev.azure.com/) a přihlaste se pracovním účtem z M365 tenantu. Pokud organizaci ještě nemáte, vytvořte ji.
 2. V Organization settings → Microsoft Entra ID ověřte připojenou directory. Pokud připojení chybí, použijte Connect directory a vyberte tenant Power Platform. U existující týmové organizace je změna directory samostatná migrace uživatelů; pro svůj lab můžete založit novou organizaci rovnou ve správném tenantu.
 3. Zvolte New project: například `PowerPlatform-ALM-Lab`, Visibility **Private**, Version control **Git**. Work item process můžete ponechat výchozí.
-4. V Repos vytvořte repozitář `pp-alm-native`, pokud chcete jiný název než automaticky vytvořený repozitář projektu. Inicializujte ho s README pomocí Initialize. Zcela prázdný repozitář ještě nemá potřebnou výchozí větev.
+4. V Repos vytvořte repozitář `PowerPlatform-ALM-Lab`, pokud chcete jiný název než automaticky vytvořený repozitář projektu. Inicializujte ho s README pomocí Initialize. Zcela prázdný repozitář ještě nemá potřebnou výchozí větev.
 5. Ověřte, že se výchozí větev jmenuje `main`. Pokud používáte jiný název, upravte i YAML a podmínku nasazení níže.
 6. V Repos → Branches vytvořte z `main` pracovní větev `dev/radim`. K ní připojíme DEV; do `main` půjdou změny přes pull request.
 7. V Organization settings → Users a Project settings → Permissions zkontrolujte svůj Basic přístup a práva k repozitáři.
@@ -427,11 +427,11 @@ Zdroj: [připojení organizace k Entra ID](https://learn.microsoft.com/en-us/azu
 2. Otevřete své custom unmanaged řešení `EnvironmentVersioning`. Pokud je stále prázdné, nejprve do něj přidejte flow a dvě proměnné z bodů 4–6.
 3. V Source control zvolte **Connect to Git**; volba může být dostupná i na seznamu Solutions.
 4. Pro tento lab vyberte **Solution binding**: verzovat chcete právě toto řešení. **Environment binding** je vhodné pro dedikované vývojové prostředí, kde chcete automaticky verzovat všechny unmanaged custom solutions. Microsoft jej doporučuje jako obecný výchozí přístup; zde volím solution binding kvůli rozsahu jednoho cvičení.
-5. Vyberte Azure DevOps organizaci, projekt a repozitář `pp-alm-native`.
-6. Vyberte větev **`dev/radim`** a Git folder **`native`**. Tato složka bude kořen nativních zdrojů. Pipeline níže předpokládá právě tuto cestu.
+5. Vyberte Azure DevOps organizaci, projekt a repozitář `PowerPlatform-ALM-Lab`.
+6. Vyberte větev **`dev/radim`** a Git folder **`solutions`**. Tato složka bude kořen nativních zdrojů. Pipeline níže předpokládá právě tuto cestu.
 7. Zvolte Connect. Pokud průvodce nejprve nastaví solution binding pro prostředí, dokončete také vazbu konkrétního řešení přes … → Connect to Git na jeho řádku; připojení prostředí samo ještě nemusí znamenat připojení konkrétní solution.
 8. Otevřete Source control a ověřte repo, větev a složku. Použijte Refresh, prohlédněte Changes a proveďte první **Commit** s popisem `Initial native source for EnvironmentVersioning`.
-9. V Azure Repos přepněte na `dev/radim` a ověřte vznik commitu a souborů pod `native/`.
+9. V Azure Repos přepněte na `dev/radim` a ověřte vznik commitu a souborů pod `solutions/`.
 
 Default Solution ani Common Data Service Default Solution tímto způsobem nepřipojujte. U solution binding respektujte omezení sdílených komponent: jeden objekt musí mít jediné místo v source control. Pozdější víceřešení návrh proto promyslete podle závislostí a zvolené vazby.
 
@@ -445,19 +445,19 @@ Nativní integrace vytváří YAML manifesty i další soubory podle typu kompon
 
 | Cesta od kořene repozitáře | Účel | Verzovat |
 | --- | --- | --- |
-| `native/solutions/EnvironmentVersioning/solution.yml` | Metadata a verze řešení | Ano |
-| `native/solutions/EnvironmentVersioning/solutioncomponents.yml` a další manifesty v této složce | Seznamy komponent a závislostí | Ano |
-| `native/publishers/AlmLabPublisher/publisher.yml` | Publisher | Ano |
-| `native/modernflows/` | Zdrojové soubory cloud flow, pokud je integrace takto vytvoří | Ano |
-| `native/environmentvariabledefinitions/` | Definice proměnných prostředí | Ano |
-| Další složky vytvořené v `native/` | Ostatní komponenty řešení | Ano |
+| `solutions/solutions/EnvironmentVersioning/solution.yml` | Metadata a verze řešení | Ano |
+| `solutions/solutions/EnvironmentVersioning/solutioncomponents.yml` a další manifesty v této složce | Seznamy komponent a závislostí | Ano |
+| `solutions/publishers/AlmLabPublisher/publisher.yml` | Publisher | Ano |
+| `solutions/modernflows/` | Zdrojové soubory cloud flow, pokud je integrace takto vytvoří | Ano |
+| `solutions/environmentvariabledefinitions/` | Definice proměnných prostředí | Ano |
+| Další složky vytvořené v `solutions/` | Ostatní komponenty řešení | Ano |
 | `config/dev.settings.json` | Netajné DEV hodnoty jako záznam požadované konfigurace | Ano |
 | `config/test.settings.json` | Netajné hodnoty použité při importu do TEST | Ano |
 | `azure-pipelines.yml` | Definice sestavení a nasazení | Ano |
 | `README.md`, `.gitignore` | Postup a pravidla nového repozitáře | Ano |
 | `artifacts/` | Lokální sestavené ZIPy | Ne |
 
-Tento layout nahrazuje zdrojovou složku `src/EnvironmentVersioning/` pro **nový nativní repozitář**. V původním ručním cvičení se tato složka používá dál. Sestavení nativního řešení bude číst celý kořen `native/`, tedy i publisher a komponenty; samotná složka `native/solutions/EnvironmentVersioning/` nestačí.
+Tento layout nahrazuje zdrojovou složku `src/EnvironmentVersioning/` pro **nový nativní repozitář**. V původním ručním cvičení se tato složka používá dál. Sestavení nativního řešení bude číst celý kořen `solutions/`, tedy i publisher a komponenty; samotná složka `solutions/solutions/EnvironmentVersioning/` nestačí.
 
 V Azure Repos přidejte do **`dev/radim`** soubory `config/dev.settings.json`, `config/test.settings.json`, README a `.gitignore`. Lze použít webový editor nebo nový lokální clone tohoto repozitáře. Do `.gitignore` přidejte:
 
@@ -493,7 +493,7 @@ DEV JSON se v této pipeline neaplikuje: DEV už má své Current values. Je to 
 
 Před commitem a v prvním diffu zkontrolujte také případné soubory s environment variable values. Nativní formát může hodnoty obsahovat; samotné připojení ke Gitu nezaručuje, že se DEV konfigurace v balíčku neobjeví. Zachovejte postup vyloučení Current values z řešení z bodu 6, ověřte obsah zdrojů a TEST hodnoty nastavujte deployment settings souborem. Ruční vymazání hodnot v Git souborech bez odpovídající změny v DEV by při dalším commitu mohlo být přepsáno.
 
-Do README nového repozitáře napište Unique name, publisher prefix, role DEV/TEST, vazbu na `dev/radim` a složku `native/`, název pipeline a service connection. Postup bude: **změna v DEV → native Commit → PR do main → pack managed → artifact → import s TEST settings → ověření flow**. Přihlašovací údaje, PAT, client secret ani tokeny do README a JSON nedávejte. Connection reference obsahuje mapování, nikoli heslo ke konektoru.
+Do README nového repozitáře napište Unique name, publisher prefix, role DEV/TEST, vazbu na `dev/radim` a složku `solutions/`, název pipeline a service connection. Postup bude: **změna v DEV → native Commit → PR do main → pack managed → artifact → import s TEST settings → ověření flow**. Přihlašovací údaje, PAT, client secret ani tokeny do README a JSON nedávejte. Connection reference obsahuje mapování, nikoli heslo ke konektoru.
 
 Zdroj: [nativní YAML formát a složky](https://learn.microsoft.com/en-us/power-platform/alm/solution-source-control-yaml-format).
 
@@ -579,7 +579,7 @@ Zdroj: [Azure Pipelines approvals and checks](https://learn.microsoft.com/en-us/
 
 ### 14.11 Přidejte kompletní YAML pipeline
 
-V `dev/radim` vytvořte v kořeni repozitáře soubor **`azure-pipelines.yml`**. Příklad předpokládá právě jedno řešení pod `native/solutions/`, výše uvedenou strukturu, service connection `PP-TEST-WIF` a Azure DevOps Environment `pp-alm-test`. Pokud máte jiný Unique name nebo Schema names, nahraďte je v ukázce i JSON souborech.
+V `dev/radim` vytvořte v kořeni repozitáře soubor **`azure-pipelines.yml`**. Příklad předpokládá právě jedno řešení pod `solutions/solutions/`, výše uvedenou strukturu, service connection `PP-TEST-WIF` a Azure DevOps Environment `pp-alm-test`. Pokud máte jiný Unique name nebo Schema names, nahraďte je v ukázce i JSON souborech.
 
 Nativní YAML zdroje umí zabalit PAC od verze **2.4.1**. Ukázka připíná vydaný `Microsoft.PowerApps.CLI.Tool` **2.12.2** a používá .NET SDK **10.x**, které tato verze vyžaduje. Aktualizaci CLI později udělejte samostatným commitem a ověřte sestavení; není nutné sledovat „latest“ v každém buildu. Pro native pack není potřeba dřívější dvojitý export Managed/Unmanaged a unpack Both.
 
@@ -596,7 +596,7 @@ pool:
 
 variables:
   SolutionName: EnvironmentVersioning
-  NativeRoot: '$(Build.SourcesDirectory)/native'
+  NativeRoot: '$(Build.SourcesDirectory)/solutions'
   PacVersion: '2.12.2'
   TestServiceConnection: PP-TEST-WIF
 
@@ -751,8 +751,8 @@ Zdroje: [PAC solution pack](https://learn.microsoft.com/en-us/power-platform/dev
 
 ### 14.12 Založte pipeline, ověřte Build a zapněte PR pravidla
 
-1. Commitněte `azure-pipelines.yml` a oba konfigurační soubory do `dev/radim`. V této větvi již musí být také první native commit pod `native/`.
-2. V Azure DevOps zvolte Pipelines → New pipeline → Azure Repos Git → `pp-alm-native` → Existing Azure Pipelines YAML file.
+1. Commitněte `azure-pipelines.yml` a oba konfigurační soubory do `dev/radim`. V této větvi již musí být také první native commit pod `solutions/`.
+2. V Azure DevOps zvolte Pipelines → New pipeline → Azure Repos Git → `PowerPlatform-ALM-Lab` → Existing Azure Pipelines YAML file.
 3. Vyberte větev `dev/radim` a `/azure-pipelines.yml`. Pipeline pojmenujte například `EnvironmentVersioning-CI-CD`.
 4. Spusťte ji nejprve ručně nad `dev/radim`. Autorizujte potřebné resources. Build má uspět a vytvořit artifact `solution`; Deploy_TEST musí být **Skipped**.
 5. Otevřete artifact, ověřte ZIP, `test.settings.json` a `provenance.json`. Především zkontrolujte skutečný Unique name, verzi a TEST hodnoty.
@@ -839,7 +839,7 @@ Zdroje: [deployment settings a connection references](https://learn.microsoft.co
 
 | Důkaz | Očekávaný výsledek |
 | --- | --- |
-| Git connection v DEV | Správná organizace, repo, `dev/radim` a `native/` |
+| Git connection v DEV | Správná organizace, repo, `dev/radim` a `solutions/` |
 | Azure Repos historie | Alespoň dva native commity a viditelný diff flow/verze |
 | Pull request | Validace před mergem do `main` |
 | Build artifact | Managed ZIP, TEST JSON a provenance ke konkrétnímu commitu |
@@ -858,7 +858,7 @@ Zdroje: [deployment settings a connection references](https://learn.microsoft.co
 | Pipeline čeká / chyba hosted parallelism | Dostupný parallel job nebo online self-hosted agent |
 | Unknown task PowerPlatform… | Instalované Build Tools v dané Azure DevOps organizaci, tasky `@2` |
 | Chybí .NET / CLI se nespustí | UseDotNet krok, .NET 10 pro připnutou CLI.Tool 2.12.2 a úspěšná NuGet instalace |
-| Pack hledá Customizations.xml | PAC podporující native YAML a správný kořen `native/` se `solutions/` a `publishers/` |
+| Pack hledá Customizations.xml | PAC podporující native YAML a správný kořen `solutions/` se `solutions/` a `publishers/` |
 | Pack hlásí více řešení | Tato ukázka podporuje jedno řešení; upravte vícesolution sestavení s explicitním výběrem v SolutionPackager |
 | PR nevyvolá kontrolu | Required Build validation na cílové větvi main, nikoli jen `pr:` v YAML |
 | Deploy je Skipped | PR nebo pracovní větev; pro ně je to očekávané |
