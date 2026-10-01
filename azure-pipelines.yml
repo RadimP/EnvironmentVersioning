@@ -1,0 +1,155 @@
+trigger:
+  batch: true
+  branches:
+    include:
+      - main
+      - dev/*
+
+pool:
+  vmImage: windows-latest
+
+variables:
+  SolutionName: EnvironmentVersioning
+  NativeRoot: '$(Build.SourcesDirectory)/solutions'
+  PacVersion: '2.12.2'
+  TestServiceConnection: PP-TEST-WIF
+
+stages:
+  - stage: Build
+    displayName: Build managed solution from Git
+    jobs:
+      - job: Pack
+        timeoutInMinutes: 60
+        steps:
+          - checkout: self
+            clean: true
+
+          - task: UseDotNet@2
+            displayName: Install .NET SDK
+            inputs:
+              packageType: sdk
+              version: 10.x
+
+          - pwsh: |
+              $ErrorActionPreference = 'Stop'
+              $sourceRoot = '$(NativeRoot)'
+              $solutionName = '$(SolutionName)'
+              $manifest = Join-Path $sourceRoot $solutionName "solutions/$solutionName/solution.yml"
+              if (-not (Test-Path $manifest)) {
+                throw "Native manifest missing: $manifest"
+              }
+              $manifests = @(Get-ChildItem (Join-Path $sourceRoot $solutionName 'solutions') `
+                -Filter solution.yml -Recurse)
+              if ($manifests.Count -ne 1) {
+                throw 'This lab pipeline expects exactly one native solution.'
+              }
+              if (-not (Test-Path (Join-Path $sourceRoot $solutionName 'publishers'))) {
+                throw 'Native publishers folder is missing.'
+              }
+
+              $settingsPath = '$(Build.SourcesDirectory)/$(solutionName)/config/test.settings.json'
+              $settings = Get-Content $settingsPath -Raw | ConvertFrom-Json
+              $names = @($settings.EnvironmentVariables | ForEach-Object { $_.SchemaName })
+              foreach ($required in @('lab_EnvironmentName', 'lab_MessagePrefix')) {
+                if ($required -notin $names) {
+                  throw "TEST configuration is missing $required"
+                }
+              }
+              $targetName = @($settings.EnvironmentVariables | Where-Object {
+                $_.SchemaName -eq 'lab_EnvironmentName'
+              })
+              if ($targetName.Count -ne 1 -or $targetName[0].Value -ne 'TEST') {
+                throw 'TEST deployment must use exactly one TEST environment name.'
+              }
+
+              $toolDir = Join-Path $env:AGENT_TEMPDIRECTORY "pac-$env:BUILD_BUILDID"
+              if (Test-Path $toolDir) { Remove-Item $toolDir -Recurse -Force }
+              dotnet tool install Microsoft.PowerApps.CLI.Tool `
+                --tool-path $toolDir --version '$(PacVersion)' `
+                --source 'https://api.nuget.org/v3/index.json'
+              if ($LASTEXITCODE -ne 0) { throw 'PAC installation failed.' }
+              $pac = Join-Path $toolDir 'pac.exe'
+              & $pac help
+              if ($LASTEXITCODE -ne 0) { throw 'PAC could not start.' }
+
+              $artifactDir = '$(Build.ArtifactStagingDirectory)/solution'
+              New-Item $artifactDir -ItemType Directory -Force | Out-Null
+              $zipPath = Join-Path $artifactDir "${solutionName}_managed.zip"
+              & $pac solution pack --folder $sourceRoot `
+                --zipfile $zipPath --packagetype Managed
+              if ($LASTEXITCODE -ne 0) { throw 'Native solution pack failed.' }
+
+              Add-Type -AssemblyName System.IO.Compression.FileSystem
+              $archive = [System.IO.Compression.ZipFile]::OpenRead($zipPath)
+              try {
+                $entry = $archive.GetEntry('solution.xml')
+                if ($null -eq $entry) { throw 'Package is missing solution.xml.' }
+                $reader = [System.IO.StreamReader]::new($entry.Open())
+                try { [xml]$solutionXml = $reader.ReadToEnd() }
+                finally { $reader.Dispose() }
+              }
+              finally { $archive.Dispose() }
+              $info = $solutionXml.ImportExportXml.SolutionManifest
+              if ([string]$info.Managed -ne '1' -or
+                  [string]$info.UniqueName -ne $solutionName) {
+                throw 'Package is not the expected managed solution.'
+              }
+
+              Copy-Item $settingsPath (Join-Path $artifactDir 'test.settings.json')
+              [ordered]@{
+                solution = $solutionName
+                solutionVersion = [string]$info.Version
+                commit = $env:BUILD_SOURCEVERSION
+                branch = $env:BUILD_SOURCEBRANCH
+                buildId = $env:BUILD_BUILDID
+                pacVersion = '$(PacVersion)'
+                zipSha256 = (Get-FileHash $zipPath -Algorithm SHA256).Hash
+              } | ConvertTo-Json | Set-Content `
+                (Join-Path $artifactDir 'provenance.json') -Encoding utf8
+            displayName: Validate configuration and pack native source
+
+          - publish: '$(Build.ArtifactStagingDirectory)/solution'
+            artifact: solution
+            displayName: Publish managed ZIP, TEST settings and provenance
+
+  - stage: Deploy_TEST
+    displayName: Deploy managed solution to TEST
+    dependsOn: Build
+    condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/main'), ne(variables['Build.Reason'], 'PullRequest'))
+    jobs:
+      - deployment: Import_TEST
+        timeoutInMinutes: 60
+        environment: pp-alm-test
+        strategy:
+          runOnce:
+            deploy:
+              steps:
+                - checkout: none
+                - download: none
+                - download: current
+                  artifact: solution
+
+                - task: PowerPlatformToolInstaller@2
+                  displayName: Install Power Platform Build Tools
+                  inputs:
+                    DefaultVersion: true
+
+                - task: PowerPlatformWhoAmi@2
+                  displayName: Check TEST application identity
+                  inputs:
+                    authenticationType: PowerPlatformSPN
+                    PowerPlatformSPN: '$(TestServiceConnection)'
+
+                - task: PowerPlatformImportSolution@2
+                  displayName: Import managed solution with TEST configuration
+                  inputs:
+                    authenticationType: PowerPlatformSPN
+                    PowerPlatformSPN: '$(TestServiceConnection)'
+                    SolutionInputFile: '$(Pipeline.Workspace)/solution/$(SolutionName)_managed.zip'
+                    UseDeploymentSettingsFile: true
+                    DeploymentSettingsFile: '$(Pipeline.Workspace)/solution/test.settings.json'
+                    AsyncOperation: true
+                    MaxAsyncWaitTime: '45'
+                    PublishWorkflows: true
+                    HoldingSolution: false
+                    OverwriteUnmanagedCustomizations: false
